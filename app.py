@@ -11,6 +11,13 @@ from flask_babelex import Babel
 from flask_sqlalchemy import SQLAlchemy
 from flask_user import current_user, login_required, roles_required, UserManager, UserMixin
 
+
+from flask_sqlalchemy_session import current_session
+from flask_sqlalchemy_session import flask_scoped_session
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, scoped_session, exc
+
 from sqlalchemy.orm import sessionmaker, scoped_session, exc
 
 
@@ -31,7 +38,7 @@ def create_app():
         RESTPLUS_VALIDATE=True,
         RESTPLUS_MASK_SWAGGER=False,
         RESTPLUS_ERROR_404_HELP=False,
-        DEBUG=True,
+        DEBUG=False,##
         SECRET_KEY='H@s@mb@H@s@mb@H@s@mb@'
     )
     print('sqlite:///' + os.path.join(app.instance_path, 'msa1.db'))
@@ -52,30 +59,113 @@ def create_app():
     # Create all database tables
     db.create_all()
 
+
+    #factory = sessionmaker(bind=db.engine, expire_on_commit=False)
+    #flask_scoped_session(factory, app)
+
+    def get_session():
+        return current_session#db.session
+    def get_session1():
+        return db.session
     # The Members page is only accessible to authenticated users
     @app.route('/add')
     def add_conf():
+        factory=''
+
+        flask_scoped_session(factory, app)
         UPLOAD_CHUNK_SIZE_MB_PROP = "key"
-        DEFAULTS= ConfigurationEntity(UPLOAD_CHUNK_SIZE_MB_PROP, "128")
+        DEFAULTS = ConfigurationEntity(UPLOAD_CHUNK_SIZE_MB_PROP, "128")
 
-        #get
+        # get
 
-        entity=""
+
+        entity = ""
         try:
-            entity = ConfigurationEntity.query.filter( ConfigurationEntity.key == "key").one()
+            entity = ConfigurationEntity.query.filter(ConfigurationEntity.key == "key").one()
         except exc.NoResultFound:
-            entity=DEFAULTS
+            entity = DEFAULTS
 
-        #put
-        print (entity.value)
+        # put
+        print(entity.value)
+        old = entity.value
 
-        entity.value ="new" +str(datetime.datetime.now())
+        entity.value = "new" + str(datetime.datetime.now())
+        new = entity.value
+        get_session().add(entity)
+        get_session().commit()
+
+        get_session().close()
+        get_session().remove()
+        return render_template_string("old:" + old + ", new:" + new)
+
+    @app.route('/add_valid')
+    def add_valid():
+        UPLOAD_CHUNK_SIZE_MB_PROP = "key"
+        DEFAULTS = ConfigurationEntity(UPLOAD_CHUNK_SIZE_MB_PROP, "128")
+
+        # get
 
 
-        db.session.add(entity)
-        db.session.commit()
-        return render_template_string("abcd")
+        entity = ""
+        try:
+            entity = ConfigurationEntity.query.filter(ConfigurationEntity.key == "key").one()
+        except exc.NoResultFound:
+            entity = DEFAULTS
 
+        # put
+        print(entity.value)
+        old = entity.value
+
+        entity.value = "new" + str(datetime.datetime.now())
+        new = entity.value
+        get_session1().add(entity)
+        get_session1().commit()
+        return render_template_string("old:" + old + ", new:" + new)
+
+    @app.route('/add_commit/<string:key>')
+    def add_commit(key):
+        val = "aa"
+        entity = ConfigurationEntity(key, val)
+        get_session1().add(entity)
+        get_session1().commit()
+        return render_template_string(key)
+
+    @app.route('/add_nocommit/<string:key>')
+    def add_nocommit(key):
+        val = "aa"
+        entity = ConfigurationEntity(key, val)
+        get_session1().add(entity)
+        # no does -get_session1().commit()
+        return render_template_string(key) \
+
+    @app.route('/test_one')
+    def test_one():
+        key="aaaaa"
+        val = "bbbbb"
+        entity = ConfigurationEntity(key, val)
+        get_session1().add(entity)
+
+        res=ConfigurationEntity.query.filter(ConfigurationEntity.key == key).one()
+
+        # no does -get_session1().commit()
+        return render_template_string(res.value)
+
+    @app.route('/add_rollback/<string:key>')
+    def add_rollback(key):
+        val = "aa"
+        entity = ConfigurationEntity(key, val)
+        get_session1().add(entity)
+        get_session1().commit()
+        get_session1().rollback()
+        return render_template_string(key)
+
+    @app.route('/list')
+    def list():
+        entities = ConfigurationEntity.query.all()
+        res=""
+        for entity in entities:
+            res=res+","+entity.key
+        return render_template_string(res)
 
     return app
 
