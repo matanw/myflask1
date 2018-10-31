@@ -16,8 +16,8 @@ TESTDB_PATH = "/Users/matanwiesner/Work/temp/test1.msa"
 TEST_DATABASE_URI = 'sqlite:///' + TESTDB_PATH
 
 
-@pytest.fixture(scope='session')
-def app(request):
+@pytest.fixture#(scope='session')
+def app():
     db_fd, db_path = tempfile.mkstemp()
     """Session-wide test `Flask` application."""
     settings_override = {
@@ -31,14 +31,12 @@ def app(request):
     ctx = app.app_context()
     ctx.push()
 
-    def teardown():
-        print("go down")
-        ctx.pop()
-        db().drop_all()
-        os.unlink(TESTDB_PATH)
+    yield app
 
-    request.addfinalizer(teardown)
-    return app
+    ctx.pop()
+    db().drop_all()
+    os.unlink(TESTDB_PATH)
+    print("down")
 
 def db():
     return db_holder[0]
