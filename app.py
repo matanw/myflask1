@@ -20,9 +20,8 @@ from sqlalchemy.orm import sessionmaker, scoped_session, exc
 
 from sqlalchemy.orm import sessionmaker, scoped_session, exc
 
-from entities import db, ConfigurationEntity
+from dao import dao
 
-db_holder=[]
 
 def create_app(config=None):
     print()
@@ -48,8 +47,11 @@ def create_app(config=None):
     # Initialize Flask-BabelEx
     babel = Babel(app)
     # Initialize Flask-SQLAlchemy
+
+    db = SQLAlchemy()
     db.init_app(app)
     #db.app=app
+    dao.set_db(db)
 
     from entities import ConfigurationEntity
     db.create_all(app=app)

@@ -2,7 +2,7 @@
 import  pytest
 
 from app import create_app
-from entities import db
+#from entities import db
 import os
 import tempfile
 @pytest.fixture

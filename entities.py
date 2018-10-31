@@ -1,6 +1,9 @@
 
 from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
+
+from dao import dao
+
+db=dao.get_db()
 class ConfigurationEntity(db.Model):
     """Persistent entity representing a configuration property"""
     __tablename__ = 'configuration'
