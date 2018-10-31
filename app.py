@@ -20,8 +20,9 @@ from sqlalchemy.orm import sessionmaker, scoped_session, exc
 
 from sqlalchemy.orm import sessionmaker, scoped_session, exc
 
+db_holder=[]
 
-def create_app():
+def create_app(config=None):
     """ Flask application factory """
 
     print()
@@ -42,10 +43,16 @@ def create_app():
         SECRET_KEY='H@s@mb@H@s@mb@H@s@mb@'
     )
     print('sqlite:///' + os.path.join(app.instance_path, 'msa1.db'))
+
+
+    if config is not None:
+        # load config if passed in
+        app.config.update(config)
     # Initialize Flask-BabelEx
     babel = Babel(app)
     # Initialize Flask-SQLAlchemy
     db = SQLAlchemy(app)
+    db_holder.append(db)
 
     class ConfigurationEntity(db.Model):
         """Persistent entity representing a configuration property"""
@@ -165,6 +172,7 @@ def create_app():
         res=""
         for entity in entities:
             res=res+","+entity.key
+        print("list:",res)
         return render_template_string(res)
 
     return app
