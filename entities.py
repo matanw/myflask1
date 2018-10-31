@@ -1,6 +1,6 @@
-from app import db_holder, db
 
-
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
 class ConfigurationEntity(db.Model):
     """Persistent entity representing a configuration property"""
     __tablename__ = 'configuration'

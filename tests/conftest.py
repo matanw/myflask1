@@ -1,7 +1,8 @@
 
 import  pytest
 
-from app import create_app, db_holder, db
+from app import create_app
+from entities import db
 import os
 import tempfile
 @pytest.fixture
@@ -20,9 +21,12 @@ TEST_DATABASE_URI = 'sqlite:///' + TESTDB_PATH
 def app():
     db_fd, db_path = tempfile.mkstemp()
     """Session-wide test `Flask` application."""
+
+    if os.path.exists(TESTDB_PATH):
+        os.unlink(TESTDB_PATH)
     settings_override = {
         'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': TEST_DATABASE_URI# 'sqlite:///' +'/Users/matanwiesner/Work/temp/test1.msa' #db_path,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///' +db_path,
     }
     #app = create_app(__name__, settings_override)
     app = create_app(settings_override)
@@ -34,8 +38,8 @@ def app():
     yield app
 
     ctx.pop()
-    db.drop_all()
-    os.unlink(TESTDB_PATH)
+    #db.drop_all()
+    os.unlink(db_path)
     print("down")
 
 @pytest.fixture(scope='session')

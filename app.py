@@ -20,13 +20,11 @@ from sqlalchemy.orm import sessionmaker, scoped_session, exc
 
 from sqlalchemy.orm import sessionmaker, scoped_session, exc
 
+from entities import db, ConfigurationEntity
+
 db_holder=[]
 
-db = SQLAlchemy()
-
 def create_app(config=None):
-    """ Flask application factory """
-
     print()
     # Create Flask app load app.config
     app = Flask(__name__)
@@ -51,10 +49,11 @@ def create_app(config=None):
     babel = Babel(app)
     # Initialize Flask-SQLAlchemy
     db.init_app(app)
-    db.app=app
-    from entities import ConfigurationEntity
-    db.create_all()
-
+    #db.app=app
+    def init():
+        from entities import ConfigurationEntity
+        db.create_all(app=app)
+    init()
 
     #factory = sessionmaker(bind=db.engine, expire_on_commit=False)
     #flask_scoped_session(factory, app)
@@ -164,8 +163,7 @@ def create_app(config=None):
         print("list:",res)
         return render_template_string(res)
 
-    return app
-
+    return  app
 
 # Start development web server
 if __name__ == '__main__':
