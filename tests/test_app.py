@@ -1,12 +1,4 @@
-def test1():
-    pass
 
-def test2(list):
-    assert list[0]==11
-
-
-def test3(app):
-    pass
 
 
 def test4(app):

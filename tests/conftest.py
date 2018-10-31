@@ -1,7 +1,7 @@
 
 import  pytest
 
-from app import create_app, db_holder
+from app import create_app, db_holder, db
 import os
 import tempfile
 @pytest.fixture
@@ -34,12 +34,9 @@ def app():
     yield app
 
     ctx.pop()
-    db().drop_all()
+    db.drop_all()
     os.unlink(TESTDB_PATH)
     print("down")
-
-def db():
-    return db_holder[0]
 
 @pytest.fixture(scope='session')
 def db1(app, request):
@@ -48,10 +45,10 @@ def db1(app, request):
         os.unlink(TESTDB_PATH)
 
     def teardown():
-        db().drop_all()
+        db.drop_all()
         os.unlink(TESTDB_PATH)
-    db().app = app
-    db().create_all()
+    #db.app = app
+    db.create_all(app=app)
 
     request.addfinalizer(teardown)
     return db()
@@ -61,7 +58,7 @@ def client(app, request):
     return app.test_client()
 
 @pytest.fixture(scope='function')
-def session(db, request):
+def session(db11, request):
     """Creates a new database session for a test."""
     connection = db.engine.connect()
     transaction = connection.begin()
