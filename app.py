@@ -50,10 +50,9 @@ def create_app(config=None):
     # Initialize Flask-SQLAlchemy
     db.init_app(app)
     #db.app=app
-    def init():
-        from entities import ConfigurationEntity
-        db.create_all(app=app)
-    init()
+
+    from entities import ConfigurationEntity
+    db.create_all(app=app)
 
     #factory = sessionmaker(bind=db.engine, expire_on_commit=False)
     #flask_scoped_session(factory, app)
