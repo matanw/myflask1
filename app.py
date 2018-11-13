@@ -59,69 +59,8 @@ def create_app():
     # Create all database tables
     db.create_all()
 
-
-    #factory = sessionmaker(bind=db.engine, expire_on_commit=False)
-    #flask_scoped_session(factory, app)
-
-    def get_session():
-        return current_session#db.session
     def get_session1():
         return db.session
-    # The Members page is only accessible to authenticated users
-    @app.route('/add')
-    def add_conf():
-        factory=''
-
-        flask_scoped_session(factory, app)
-        UPLOAD_CHUNK_SIZE_MB_PROP = "key"
-        DEFAULTS = ConfigurationEntity(UPLOAD_CHUNK_SIZE_MB_PROP, "128")
-
-        # get
-
-
-        entity = ""
-        try:
-            entity = ConfigurationEntity.query.filter(ConfigurationEntity.key == "key").one()
-        except exc.NoResultFound:
-            entity = DEFAULTS
-
-        # put
-        print(entity.value)
-        old = entity.value
-
-        entity.value = "new" + str(datetime.datetime.now())
-        new = entity.value
-        get_session().add(entity)
-        get_session().commit()
-
-        get_session().close()
-        get_session().remove()
-        return render_template_string("old:" + old + ", new:" + new)
-
-    @app.route('/add_valid')
-    def add_valid():
-        UPLOAD_CHUNK_SIZE_MB_PROP = "key"
-        DEFAULTS = ConfigurationEntity(UPLOAD_CHUNK_SIZE_MB_PROP, "128")
-
-        # get
-
-
-        entity = ""
-        try:
-            entity = ConfigurationEntity.query.filter(ConfigurationEntity.key == "key").one()
-        except exc.NoResultFound:
-            entity = DEFAULTS
-
-        # put
-        print(entity.value)
-        old = entity.value
-
-        entity.value = "new" + str(datetime.datetime.now())
-        new = entity.value
-        get_session1().add(entity)
-        get_session1().commit()
-        return render_template_string("old:" + old + ", new:" + new)
-
     @app.route('/add_commit/<string:key>')
     def add_commit(key):
         val = "aa"
@@ -138,26 +77,6 @@ def create_app():
         # no does -get_session1().commit()
         return render_template_string(key) \
 
-    @app.route('/test_one')
-    def test_one():
-        key="aaaaa"
-        val = "bbbbb"
-        entity = ConfigurationEntity(key, val)
-        get_session1().add(entity)
-
-        res=ConfigurationEntity.query.filter(ConfigurationEntity.key == key).one()
-
-        # no does -get_session1().commit()
-        return render_template_string(res.value)
-
-    @app.route('/add_rollback/<string:key>')
-    def add_rollback(key):
-        val = "aa"
-        entity = ConfigurationEntity(key, val)
-        get_session1().add(entity)
-        get_session1().commit()
-        get_session1().rollback()
-        return render_template_string(key)
 
     @app.route('/list')
     def list():
